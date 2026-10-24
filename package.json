@@ -1,0 +1,50 @@
+{
+  "name": "dsh-share",
+  "version": "0.4.1",
+  "description": "Share a DeepSeek Harness conversation as a public read-only link, like the DeepSeek web share link.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "share",
+    "cordis"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test test-share-flow.mjs test-client-flow.mjs test-htmlhoster.mjs test-publication-journal.mjs test-brewpage.mjs test-trust-fence.mjs test-default-publishing.mjs",
+    "test:cloud": "node cloud/build.mjs && node --test cloud/test-worker.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web"
+    }
+  },
+  "author": "RestartBaiYe",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RestartBaiYe/dsh-share.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RestartBaiYe/dsh-share/issues"
+  },
+  "homepage": "https://github.com/RestartBaiYe/dsh-share#readme",
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

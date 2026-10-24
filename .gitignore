@@ -1,0 +1,15 @@
+node_modules/
+*.tgz
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+coverage/
+cloud/dist/
+cloud/.wrangler/
+relay/data/
+.dsh/
+shares/
+cache/

@@ -1,0 +1,5 @@
+# dsh-share — public read-only conversation links for the DSH Web GUI.
+# The row name resolves through the profile's module resolution (profile dir).
+- insert:
+    - id: dsh-share
+      name: dsh-share
