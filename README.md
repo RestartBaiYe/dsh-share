@@ -1,96 +1,102 @@
-# dsh-share 0.4.1
+# dsh-share 0.5.0
 
-[English](README.en.md) · [下载 v0.4.1](https://github.com/RestartBaiYe/dsh-share/releases/tag/v0.4.1) · [反馈问题](https://github.com/RestartBaiYe/dsh-share/issues)
+[English](README.en.md) · [下载安装包](https://github.com/RestartBaiYe/dsh-share/releases/latest) · [反馈问题](https://github.com/RestartBaiYe/dsh-share/issues)
 
-将 DeepSeek Harness 对话生成可独立阅读的只读网页。新增 **BrewPage 限时分享**：不用注册额外账号，可选 **1 天 / 3 天 / 7 天 / 30 天**，发布成功后可关闭 DSH 或电脑。
+把 DeepSeek Harness 对话分享成可独立阅读的网页。无需额外注册账号；使用 **BrewPage** 可选 **1 / 3 / 7 / 30 天**，发布成功后可以关闭 DSH 或电脑。
 
-## 使用
+## v0.5.0
 
-1. 打开一段 DSH 对话，点击标题栏「分享」。
-2. 先通过「本机链接」预览内容，确认可公开分享。
-3. 在「BrewPage 分享有效期」中选择 1、3、7 或 30 天，默认 7 天。
-4. 点击 **「使用 BrewPage 限时分享」**，只把快照上传至 brewpage.app。
-5. 弹窗显示分享链接和服务端返回的到期时间。复制链接发送即可，对方无需账号，DSH 无需保持运行。
-6. 回到原对话的分享弹窗可恢复链接或提前撤销。撤销失败时保留管理凭据，便于重试。
-
-已有链接的有效期不会因再次点击而续期。若要变更时长，先撤销再重新分享；已到期的记录可重新选择时长并发布。服务端执行有效期，不依赖本机定时器。有效期无法收回接收者已保存的副本。
-
-## 验证状态
-
-- BrewPage 已完成真实公网测试：选择 1 天、服务端返回匹配的到期时间、发布子进程退出后页面读取 **200** 且内容匹配、撤销后读取 **404**。
-- 没有等待满 1 天验证自然过期；已核对官方 TTL 接口、实际请求和服务返回的 expiresAt。1 / 3 / 7 / 30 天均有接口及界面测试。
-- 本地测试还覆盖不自动转传、同一快照复用不续期、修改有效期需先撤销、管理凭据过滤、撤销失败保留凭据、进程中断后的凭据恢复。
-- DSH Share / HTML Hoster 旧通道保留。它们此前在本机分别遇到 Cloudflare 拦截、DNS 失败，不会在 BrewPage 失败后被自动调用。
-- 本次公网测试仅使用程序生成的文字，未使用真实聊天记录。
+- **先预览，再分享**：直接在窗口中查看脱敏后的文字；勾选消息、只选最后一轮、修改标题。保存选择后生成新的快照，原链接不会改变。
+- **找回旧链接**：同一对话的历史快照集中显示，可打开、复制或撤销。新增消息后仍能管理以前发布的链接。
+- **更可靠的撤销**：发布过程中撤销会等待上传结果；撤销时阻止新的上传。未确认删除时保留记录和删除凭据。
+- **更多隐私保护**：默认处理路径大小写、分隔符和转义形式，并脱敏可识别的访问令牌、私钥和密码字段。新快照使用 128 位随机标识。
+- **离线导出**：选好的内容可以导出自包含 HTML 或 Markdown。手机布局、深色模式及键盘操作已检查。
+- **发布检查**：CI 会审计真正的 npm 安装包，阻止个人托管域名、部署 ID、硬编码凭据、账号路径和意外文件进入发行版。
 
 ## 安装
 
-**Desktop：**在 DSH 的「添加插件」中粘贴：
+DSH Desktop 的「添加插件」中输入：
 
 ```text
-github:RestartBaiYe/dsh-share#v0.4.1
+github:RestartBaiYe/dsh-share#v0.5.0
 ```
 
-**Web：**使用正常的 DSH 插件管理器安装：
+Web profile：
 
-```powershell
-dsh plugin --profile web add 'github:RestartBaiYe/dsh-share#v0.4.1'
+```sh
+dsh plugin --profile web add 'github:RestartBaiYe/dsh-share#v0.5.0'
 ```
 
-也可在 [Releases](https://github.com/RestartBaiYe/dsh-share/releases/latest) 下载 `.tgz`，将下载地址交给插件管理器。插件没有 npm 安装脚本或构建步骤。
+也可以使用 [发行版](https://github.com/RestartBaiYe/dsh-share/releases/latest) 的 `.tgz`。没有运行时依赖、npm 安装脚本或构建步骤；需要 Node.js 22.13+。安装或升级后刷新页面，必要时重启 DSH。旧版本的快照和删除凭据可继续使用。
 
-下面的本地安装器供需要手动链接源码的用户使用：
+需要手动安装源码时运行 `node install.mjs --profile desktop`，或双击 `install-desktop.cmd`；Web 使用 `--profile web`。支持 `DSH_HOME` / `DSH_PROFILE_DIR`。安装器会备份旧插件与 profile 配置，不修改 app.asar，不改写用户的 `cordis.patch.yml`。
 
-已有 DSH Desktop profile 的用户双击 `install-desktop.cmd`，或运行：
+## 使用
 
-```powershell
-node install.mjs --profile desktop
-# Web profile
-node install.mjs --profile web
-```
+1. 打开对话，点击标题栏的「分享」。此时仅创建本机快照，不会上传。
+2. 展开消息检查内容。可以改标题、取消勾选，或点击「仅最后一轮」。
+3. 有修改时，点击「保存选择并预览」，确认新快照内容。
+4. 选择有效期，再点击「使用 BrewPage 限时分享」。成功后显示服务端返回的链接和到期时间。
+5. 需要找回或撤销旧链接时，在「分享记录」中选择对应快照。
 
-支持 `DSH_HOME` / `DSH_PROFILE_DIR`。安装器不修改 app.asar，不删除原插件目录；旧插件和 profile 配置备份至 `<profile>/.dsh-share-backup/<时间>/`。安装后刷新 DSH 页面，必要时重启。
+已发布链接不会跟随对话更新。再次发布同一有效快照会复用原链接，不延长时效；要修改期限或切换服务，先撤销原链接。修改内容会生成另一份快照，旧链接仍在历史列表中。
 
-也可以通过 DSH 的插件管理安装本目录生成的 `dsh-share-0.4.1.tgz`。
+「导出网页对话」和「导出 Markdown」只下载本机文件。HTML 内含搜索、目录和深色模式，可离线阅读。云端到期或撤销无法收回已下载的副本。
+
+## 托管服务
+
+| 通道 | 需要额外账号 | 有效期 | DSH 关闭后 |
+|---|---|---|---|
+| BrewPage | 不需要 | 分享时选 1 / 3 / 7 / 30 天 | 可访问至到期或撤销 |
+| HTML Hoster | 不需要 | 不保证自动到期；可尝试提前撤销 | 取决于服务保存状态 |
+| 自有中转 | 自行部署 | 使用 `ttlDays` | 取决于中转服务 |
+| 临时公网隧道 | 不需要 | DSH 运行期间 | 不可访问；默认关闭 |
+
+每个服务必须手动选择。失败不会自动把内容上传到另一家。BrewPage 使用随机的非公开列出命名空间；持有链接的人仍可以阅读。第三方可能添加其页面标识，可达性、额度和保存期限受服务运营影响。
+
+HTML Hoster 此前在测试网络遇到 DNS 失败，保留为可选通道。插件没有内置个人中转地址；未配置中转时，相应按钮隐藏，直接请求也会被拒绝。
 
 ## 配置
 
 ```yaml
 - id: dsh-share
   config:
-    brewpageEnabled: true        # 显示 BrewPage 按钮；有效期在分享时选择
-    relayUrl: ""                # 可选：填写自行部署的中转地址
-    publishProvider: auto
-    htmlhosterEnabled: true      # 独立按钮，不参与默认流程
-    ttlDays: 0                  # 原通道和本机快照的默认有效期
+    brewpageEnabled: true
+    htmlhosterEnabled: true
+    relayUrl: ""                 # 可选：自行部署的中转
+    publishProvider: auto        # none 禁止所有上传
+    ttlDays: 0                   # 本机快照与自有中转；不替代 BrewPage 的选择
     publicTunnel: false
     redactPaths: true
+    redactSecrets: true
     includeReasoning: false
     includeTools: false
-    maxMessages: 1000
+    maxMessages: 1000            # 取最近的消息；预览会提示截断
 ```
 
-插件不再内置任何个人账号或个人中转域名。未配置 `relayUrl` 时，中转按钮隐藏且请求被拒绝，不会回退上传至其他服务。BrewPage 和 HTML Hoster 仍需手动选择。`publishProvider: none` 禁用所有上传。`brewpageEnabled: false` 隐藏并禁用 BrewPage。BrewPage 本次选取的期限传给其服务端，原 `ttlDays` 配置不替代这项选择。配置了 `ttlDays > 0` 时 HTML Hoster 被禁用，因为该服务未提供可验证的自动到期机制。
+`brewpageEnabled: false` 可单独关闭 BrewPage。`ttlDays > 0` 时禁用 HTML Hoster，因为其没有可验证的自动到期保证。仅设置必要选项即可；界面的管理路径固定为 `/share`。
 
-## 分享与隐私
+## 隐私与恢复
 
-- 快照不会自动跟随新消息更新；只有点击具体服务的按钮才上传，也不会自动转传给另一家。
-- BrewPage 使用每次随机生成的非 public 命名空间，避免进入其公开列表和站点地图；链接持有者仍可直接阅读。
-- 默认不分享思考、工具输出、系统提示和内部会话 ID；标题和正文中的本地路径、用户名、IP 默认脱敏。自动脱敏不能识别所有秘密，应先预览。
-- BrewPage 服务器返回的主分享链接原样使用；不会从内部 ID 猜测子域名。管理凭据只发给固定的 apex 删除接口，不发给内容子域名。
-- 管理凭据保存在 `$DSH_HOME/shares/index.json` 或 `pending-publications/` 恢复日志中，不返回给公开页面或分享列表；删除本机全部分享数据后无法恢复它们。
-- 撤销会检查公开地址返回 404 / 410，未确认删除时保留凭据。第三方可能添加其标识，存储及可达性受其运营和网络限制影响。
-- 「导出网页对话」仍可生成自包含 HTML 文件，直接发送并离线阅读。
+- 默认不包含思考、工具输出、系统提示或内部会话 ID。自动脱敏不能识别所有秘密，预览是最终检查依据。
+- 对话必须主动发布才会交给所选第三方；这不属于端到端加密分享。不要用公开链接传递未经允许公开的内容。
+- 删除凭据保存在 `$DSH_HOME/shares/index.json` 与 `pending-publications/` 中，不出现在公开页面、预览 API 或列表响应里。请保留该目录，不要上传到仓库。
+- 索引或恢复日志损坏时，插件会停止写入，避免覆盖原记录；请先备份并修复存储。远端删除失败时可以稍后重试。旧 Gist / Neocities / 不支持自动撤销的记录不会因删除失败而被清空。
+- 管理接口受宿主校验保护；没有宿主校验服务时，仅接受本机来源和同源请求。令牌只发送到对应服务的管理接口。
+- 同一个分享目录应由一个 DSH 进程管理；同进程的存储实例会串行写入索引。
 
-BrewPage 官方文档：https://brewpage.app/llms-full.txt 。仅参考官方 HTTP 协议，未安装任何远程技能或脚本。
+## 验证
 
-## 开发验证
-
-```powershell
+```sh
 npm test
 npm run test:cloud
-# 真实公网测试，仅上传程序生成的演示文字，结束时撤销
+npm run verify:package
+# 显式公网验证，仅使用合成文字，并在结束时撤销
 node smoke-cloud.mjs --provider brewpage --ttl-days 1
 ```
 
-`cloud/` 是原 DSH Share 服务，`relay/server.mjs` 是可自行部署的 Node 中转。BrewPage 接入不需要部署它们、不需要账号或用户自有服务器。
+2026-10-25：21 项插件回归测试、2 项云端示例测试通过；真实浏览器完成桌面、手机深色模式、消息筛选、脱敏、发布、撤销和 Escape 操作检查。BrewPage 公网测试确认 1 天的服务端到期时间、发布子进程退出后读取 200、撤销后读取 404；没有等待满 1 天验证自然到期。
+
+`cloud/` 与 `relay/` 是可选自部署示例，不是 BrewPage 的依赖。中转验证使用 `DSH_SHARE_RELAY_URL` 环境变量。兼容性基于当前宿主服务接口与本机 Desktop profile 验证，未声称覆盖每个 DSH 版本。
+
+[变更记录](CHANGELOG.md) · [BrewPage 官方 API](https://brewpage.app/llms-full.txt) · MIT。社区插件，非 DeepSeek 官方产品。

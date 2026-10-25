@@ -18,4 +18,4 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: npm test
       - run: npm run test:cloud
-      - run: npm pack --ignore-scripts
+      - run: npm run verify:package

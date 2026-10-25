@@ -13,7 +13,6 @@ test('restart recovers publication credentials after interrupted index commit', 
     await store.create({ id, sessionId: 'session', title: 'test', messages: [] });
     await store.create({ id: 'damaged12345', sessionId: 'other', title: 'other', messages: [] });
     await store.stagePublication(id, { publishedProvider: 'htmlhoster', publishedUrl: 'https://htmlhoster.com/p/x/index.html', htmlhosterDeleteToken: 'private-journal-key' });
-    await writeFile(join(root, 'pending-publications', 'damaged12345.json'), '{invalid');
     // Simulate a crash before store.update(): the index contains no keys.
     assert.ok(!(await readFile(join(root, 'index.json'), 'utf8')).includes('private-journal-key'));
     const restarted = createShareStore({ root });
@@ -24,5 +23,8 @@ test('restart recovers publication credentials after interrupted index commit', 
     await assert.rejects(readFile(join(root, 'pending-publications', id + '.json')), { code: 'ENOENT' });
     await restarted.remove(id);
     assert.equal((await restarted.readIndex()).shares[id], undefined);
+    await writeFile(join(root, 'pending-publications', 'damaged12345.json'), '{invalid');
+    await assert.rejects(restarted.update('damaged12345', { title: 'must not overwrite' }), { code: 'store-unavailable' });
+    assert.equal(await readFile(join(root, 'pending-publications', 'damaged12345.json'), 'utf8'), '{invalid');
   } finally { await rm(root, { recursive: true, force: true }); }
 });

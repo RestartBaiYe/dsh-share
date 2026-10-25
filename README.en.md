@@ -1,60 +1,80 @@
-# dsh-share
+# dsh-share 0.5.0
 
-[中文](README.md) · [Release v0.4.1](https://github.com/RestartBaiYe/dsh-share/releases/tag/v0.4.1)
+[中文](README.md) · [Latest release](https://github.com/RestartBaiYe/dsh-share/releases/latest)
 
-Share a DeepSeek Harness conversation as a read-only web snapshot. The BrewPage option needs no additional account and offers **1, 3, 7 or 30 days** of server-enforced retention. Once publishing succeeds, DSH and the author's computer can shut down.
+Share a DeepSeek Harness conversation as a read-only web page. **BrewPage** needs no extra account and offers **1 / 3 / 7 / 30 days** of retention. Readers can open a published link after DSH and the author's computer shut down.
 
 ## Install
 
-In DSH Desktop, paste this into **Add plugin**, then reload/restart:
+Paste into DSH Desktop's **Add plugin**:
 
 ```text
-github:RestartBaiYe/dsh-share#v0.4.1
+github:RestartBaiYe/dsh-share#v0.5.0
 ```
 
 For a web profile:
 
 ```sh
-dsh plugin --profile web add 'github:RestartBaiYe/dsh-share#v0.4.1'
+dsh plugin --profile web add 'github:RestartBaiYe/dsh-share#v0.5.0'
 ```
 
-The prebuilt `.tgz` is also available in the GitHub release. There are no runtime dependencies, npm lifecycle install scripts or build requirements. Node.js 22.13+ is required. DSH is evolving quickly; compatibility has been exercised with the author's local Desktop profile, not every DSH version.
+A prebuilt `.tgz` is available in [Releases](https://github.com/RestartBaiYe/dsh-share/releases/latest). No runtime dependencies, npm lifecycle scripts or build step. Node.js 22.13+ is required. Reload/restart DSH after upgrading. Existing snapshots and revocation keys remain compatible.
 
-## Share
+The optional source installer is `node install.mjs --profile desktop` (`--profile web` for web). It supports `DSH_HOME` and `DSH_PROFILE_DIR`, backs up the previous installation and preserves unrelated profile settings and the user's Cordis patch.
 
-1. Open a conversation and click **Share** in its header.
-2. Inspect the local snapshot before publishing.
-3. Select **1 / 3 / 7 / 30 days** and click **Share with BrewPage (expires)**.
-4. Copy the returned URL. Anyone holding it can read without signing in.
-5. Reopen the same dialog to recover the link or revoke it early.
+## Review, select and share
 
-Reusing a live share preserves its original expiry. To change its lifetime, revoke it and publish again. The expiration shown in the dialog comes from the hosting service, rather than a timer on your computer.
+1. Click **Share** in a conversation. Creating this local snapshot does not upload it.
+2. Review the saved, redacted text. Edit the title, select individual messages or choose **Last turn only**.
+3. If you changed anything, click **Save selection & review**. This creates another immutable snapshot; old links are unchanged.
+4. Choose a lifetime, then explicitly click **Share with BrewPage (expires)**. The dialog shows the returned link and server expiry.
+5. Use **Share history** to recover or revoke earlier links, even after adding messages to the conversation.
 
-Each hosting service has its own labelled action; failures never silently upload to another provider. No personal relay address or hosting account is built in. The optional DSH Share action requires your own `relayUrl`; without it the action is hidden and requests fail without contacting another host. HTML Hoster remains a separate manual action. Use `brewpageEnabled: false` to disable BrewPage, or `publishProvider: none` to disable publishing altogether.
+A live publication is reused without extending its lifetime. Revoke before changing retention or switching providers. Export the reviewed snapshot as a self-contained HTML file or Markdown without any upload; HTML includes offline search, a contents panel and dark mode.
 
-## Privacy and limits
+## Hosting and privacy
 
-Snapshots are immutable views of the current messages. Later conversation turns are not automatically published. Reasoning, tools and runtime context are excluded by default. Local paths, user/host names and IP addresses are redacted in titles and messages; review the preview because this cannot detect every secret.
+- Each host requires its own explicit action. There is no automatic upload fallback.
+- BrewPage uses a fresh unlisted namespace. Anyone with the link can read it; this is not end-to-end encrypted sharing. Availability, quotas and retention depend on the provider.
+- HTML Hoster is an optional manual channel without guaranteed automatic expiry or permanent storage. It previously failed DNS resolution in the test network.
+- No personal relay address is built in. A relay needs your own `relayUrl`; missing configuration hides its button and rejects uploads. Temporary tunnels are disabled by default and require DSH to stay running.
+- Reasoning, tools, system prompts and internal session IDs are excluded by default. Local paths and identities, recognised access tokens, private keys and credential fields are scrubbed before persistence. Automatic redaction is incomplete; always review the preview.
+- Revocation credentials stay in `$DSH_HOME/shares/`, separate from public pages and management listing/preview responses. Keep that directory to retain deletion access.
+- Revocation waits for an ongoing upload and blocks overlapping new uploads. Failed deletions preserve the record. Corrupt indexes or journals stop writes instead of being replaced by empty data. Use one DSH process per share directory.
+- Expiry or revocation cannot erase downloaded copies. An interrupted network response can leave the outcome uncertain; uploads are not automatically retried.
 
-BrewPage receives the snapshot only after its own button is clicked. Each upload uses a random unlisted namespace, not the public gallery. This does not make the URL access-controlled: anyone with it can read. The provider may append its attribution badge. Its availability, retention and operational limits apply; expiry/revocation cannot erase recipients' downloaded copies.
+## Configuration
 
-Management tokens stay under `$DSH_HOME/shares/`, separate from public pages and API listing responses. A publication journal recovers received deletion credentials after an interrupted local index write. Keep that directory to retain early-revocation access.
+```yaml
+- id: dsh-share
+  config:
+    brewpageEnabled: true
+    htmlhosterEnabled: true
+    relayUrl: ""
+    publishProvider: auto
+    ttlDays: 0
+    publicTunnel: false
+    redactPaths: true
+    redactSecrets: true
+    includeReasoning: false
+    includeTools: false
+    maxMessages: 1000
+```
+
+`publishProvider: none` disables all uploads. BrewPage retention is chosen in the dialog; `ttlDays` instead controls local snapshots and the relay. A positive `ttlDays` disables HTML Hoster. The client management path is `/share`.
 
 ## Verification
 
 ```sh
 npm test
 npm run test:cloud
-```
-
-The live synthetic BrewPage smoke test verified publishing with a matching one-day expiry, reading **HTTP 200 after the publishing child exited**, and **HTTP 404 after revocation**. It did not wait a full day to observe natural expiry. To repeat it explicitly:
-
-```sh
+npm run verify:package
+# Optional live synthetic test, with cleanup
 node smoke-cloud.mjs --provider brewpage --ttl-days 1
 ```
 
-`cloud/` and `relay/` contain optional self-hosted implementations; they are not required for BrewPage. The cloud manifest is an unbound example and contains no deployed project identity.
+On 2026-10-25: 21 plugin regression tests and 2 cloud-example tests passed. A real-browser test covered desktop, mobile dark mode, content selection, redaction, publishing, revocation and Escape. The live BrewPage test confirmed one-day server expiry, HTTP 200 after the publishing child exited and HTTP 404 after revocation. Natural expiry was not waited out.
 
-## License
+CI tests Node 22/24 on Linux/Windows and audits the actual package for unexpected files, personal hostnames, deployment identities, hardcoded credentials and account paths. `cloud/` and `relay/` are optional self-hosted examples, not requirements for BrewPage. Live relay tests use `DSH_SHARE_RELAY_URL`. Compatibility is tested against the host service contract and the local Desktop profile, not every DSH version.
 
-MIT. This is a community plugin, not an official DeepSeek product. Hosting API: [BrewPage reference](https://brewpage.app/llms-full.txt).
+[Changelog](CHANGELOG.md) · [BrewPage API](https://brewpage.app/llms-full.txt) · MIT. Community plugin; not an official DeepSeek product.

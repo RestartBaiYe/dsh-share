@@ -14,6 +14,7 @@ test('an unconfigured relay cannot disclose a conversation to fallback providers
   let networkCalls = 0;
   globalThis.fetch = async () => { networkCalls++; throw new Error('Unexpected network request'); };
   try {
+    for (const ttlDays of [Infinity, NaN, -1, 'invalid']) assert.throws(() => apply({}, { ttlDays }), /ttlDays/);
     for (const config of [{}, { githubToken: 'synthetic-unused-token', neocitiesUser: 'synthetic-unused-user' }, { publishProvider: 'relay' }]) {
       const routes = [];
       apply({ get: name => name === 'connection' ? { requestRejection() {} } : undefined, webServer: { register: route => routes.push(route) } }, config);
